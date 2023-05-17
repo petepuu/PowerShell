@@ -9,57 +9,55 @@ $output = @()
 
 $envs = Get-AdminPowerAppEnvironment
 
-foreach ($env in $envs)
-{
-    $apps += Get-AdminPowerApp -EnvironmentName $env.EnvironmentName
-}
-
 Write-Host "Canvas apps having SQL Server connection(s)"
 
-foreach ($a in $apps)
-{  
-    if ($a.Internal.properties.connectionReferences -ne $null)
-    {
-        $connRefs = $a.Internal.properties.connectionReferences | gm -MemberType NoteProperty
+foreach ($env in $envs)
+{
+    $apps = Get-AdminPowerApp -EnvironmentName $env.EnvironmentName
 
-        $sqls = $connRefs | ? { $_.Definition -like "*id=/providers/Microsoft.PowerApps/scopes/admin/apis/shared_sql*" }
-    
-        $cnt = Measure-Object -InputObject $sqls
-
-        if ($cnt.Count -gt 0)
+    foreach ($a in $apps)
+    {  
+        if ($a.Internal.properties.connectionReferences -ne $null)
         {
-            write-host "APP:'$($a.DisplayName)' ($($a.AppName)) - ENV:$($a.EnvironmentName)"
+            $connRefs = $a.Internal.properties.connectionReferences | gm -MemberType NoteProperty
 
-            foreach ($sql in $sqls)
+            $sqls = $connRefs | ? { $_.Definition -like "*id=/providers/Microsoft.PowerApps/scopes/admin/apis/shared_sql*" }
+        
+            $cnt = Measure-Object -InputObject $sqls
+
+            if ($cnt.Count -gt 0)
             {
-                $c = $a.Internal.properties.connectionReferences."$($sql.Name)"
+                write-host "APP:'$($a.DisplayName)' ($($a.AppName)) - ENV:$($a.EnvironmentName)"
 
-                $isImplicit = "False"
-
-                if ($c.authenticationType -notin ("oAuth", "windowsAuthenticationNonShared"))
+                foreach ($sql in $sqls)
                 {
-                    $isImplicit = "True"
+                    $c = $a.Internal.properties.connectionReferences."$($sql.Name)"
+
+                    $isImplicit = "False"
+
+                    if ($c.authenticationType -notin ("oAuth", "windowsAuthenticationNonShared"))
+                    {
+                        $isImplicit = "True"
+                    }
+
+                    $out = New-Object PSObject
+                    $out | Add-Member -MemberType NoteProperty -Name AppId -Value $a.AppName
+                    $out | Add-Member -MemberType NoteProperty -Name DisplayName -Value $a.DisplayName
+                    $out | Add-Member -MemberType NoteProperty -Name AppEnvId -Value $a.EnvironmentName
+                    $out | Add-Member -MemberType NoteProperty -Name DataSources -Value ([system.String]::Join(",", $c.dataSources))
+                    $out | Add-Member -MemberType NoteProperty -Name Endpoints -Value ([system.String]::Join(",", $c.endpoints))
+                    $out | Add-Member -MemberType NoteProperty -Name AuthenticationType -Value $c.authenticationType
+                    $out | Add-Member -MemberType NoteProperty -Name IsImplicit -Value $isImplicit
+                    $out | Add-Member -MemberType NoteProperty -Name IsOnPrem -Value $c.isOnPremiseConnection
+                    $out | Add-Member -MemberType NoteProperty -Name AppSharedusers -Value $a.Internal.properties.sharedUsersCount
+                    $out | Add-Member -MemberType NoteProperty -Name AppSharedGroups -Value $a.Internal.properties.sharedGroupsCount
+
+                    $output  += $out
                 }
-
-                $out = New-Object PSObject
-                $out | Add-Member -MemberType NoteProperty -Name AppId -Value $a.AppName
-                $out | Add-Member -MemberType NoteProperty -Name DisplayName -Value $a.DisplayName
-                $out | Add-Member -MemberType NoteProperty -Name AppEnvId -Value $a.EnvironmentName
-                $out | Add-Member -MemberType NoteProperty -Name DataSources -Value ([system.String]::Join(",", $c.dataSources))
-                $out | Add-Member -MemberType NoteProperty -Name Endpoints -Value ([system.String]::Join(",", $c.endpoints))
-                $out | Add-Member -MemberType NoteProperty -Name AuthenticationType -Value $c.authenticationType
-                $out | Add-Member -MemberType NoteProperty -Name IsImplicit -Value $isImplicit
-                $out | Add-Member -MemberType NoteProperty -Name IsOnPrem -Value $c.isOnPremiseConnection
-                $out | Add-Member -MemberType NoteProperty -Name AppSharedusers -Value $a.Internal.properties.sharedUsersCount
-                $out | Add-Member -MemberType NoteProperty -Name AppSharedGroups -Value $a.Internal.properties.sharedGroupsCount
-
-                $output  += $out
-            }
-        }  
-    }    
+            }  
+        }    
+    }
 }
-
-
 
 $output | Export-Csv -NoTypeInformation $PSScriptRoot\appswithsqlconnections.csv -Force
 
