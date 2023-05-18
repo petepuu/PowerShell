@@ -35,17 +35,34 @@ foreach ($env in $envs)
 
                     $isImplicit = "False"
 
-                    if ($c.authenticationType -notin ("oAuth", "windowsAuthenticationNonShared"))
+                    if ($c.authenticationType -ne $null)
                     {
-                        $isImplicit = "True"
+                        if ($c.authenticationType -notin ("oAuth", "windowsAuthenticationNonShared"))
+                        {
+                            $isImplicit = "True"
+                        }
+                    }
+                    
+                    $dataSources = ""
+
+                    if ($c.dataSources -ne $null)
+                    {
+                        $dataSources = [system.String]::Join(",", $c.dataSources)
+                    }
+
+                    $endpoints = ""
+
+                    if ($c.endpoints -ne $null)
+                    {
+                        $endpoints = [system.String]::Join(",", $c.endpoints)
                     }
 
                     $out = New-Object PSObject
                     $out | Add-Member -MemberType NoteProperty -Name AppId -Value $a.AppName
                     $out | Add-Member -MemberType NoteProperty -Name DisplayName -Value $a.DisplayName
                     $out | Add-Member -MemberType NoteProperty -Name AppEnvId -Value $a.EnvironmentName
-                    $out | Add-Member -MemberType NoteProperty -Name DataSources -Value ([system.String]::Join(",", $c.dataSources))
-                    $out | Add-Member -MemberType NoteProperty -Name Endpoints -Value ([system.String]::Join(",", $c.endpoints))
+                    $out | Add-Member -MemberType NoteProperty -Name DataSources -Value $dataSources
+                    $out | Add-Member -MemberType NoteProperty -Name Endpoints -Value $endpoints
                     $out | Add-Member -MemberType NoteProperty -Name AuthenticationType -Value $c.authenticationType
                     $out | Add-Member -MemberType NoteProperty -Name IsImplicit -Value $isImplicit
                     $out | Add-Member -MemberType NoteProperty -Name IsOnPrem -Value $c.isOnPremiseConnection
