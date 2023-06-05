@@ -12,7 +12,7 @@ param
 # Install Microsoft.Xrm.Data.PowerShell module if not installed already 
 $m2 = Get-InstalledModule -Name Microsoft.Xrm.Data.PowerShell -ErrorAction Ignore
 
-if ($m2 -eq $null)
+if ($null -eq $m2)
 {
     $title    = 'Install Microsoft.Xrm.Data.PowerShell Module'
     $question = 'Unable to find Microsoft.Xrm.Data.PowerShell module version which is needed for this script to run. Do you want to install this module?'
@@ -36,6 +36,7 @@ $connSource = Connect-CrmOnline -ServerUrl $SourceEnvironmentUrl -ForceOAuth
 
 $connDest = Connect-CrmOnline -ServerUrl $DestinationEnvironmentUrl -ForceOAuth
 
+# Get all events from the AuditLog table of the source environment
 $sourceRecords = Get-CrmRecords -conn $connSource -EntityLogicalName admin_auditlog -Fields admin_title,admin_applookup,admin_operation,admin_appid,admin_workload,admin_userupn,admin_creationtime,admin_auditlogid -ErrorAction SilentlyContinue   
 
 write-host
@@ -46,13 +47,14 @@ $cntMigrated = 0
 
 foreach ($e in $sourceRecords.CrmRecords)
 {
-    # check does the app exist in Power Apps table. If yes then get reference for the lookup and also update admin_applastlaunchedon
+    # Check does the app exist in Power Apps table
     $rApp = Get-CrmRecord -conn $connDest -EntityLogicalName admin_app -Id $e.admin_appid -Fields admin_appid,admin_applastlaunchedon -ErrorAction SilentlyContinue              
     
-    if ($rApp.original -ne $null)
+    # !!!! Only process if app is found in admin_app table !!!!
+    if ($null -ne $rApp.original)
     {
-        # Update admin_applastlaunchedon is less than current auditlog entry
-        if (($rApp.admin_applastlaunchedon -eq $null) -or ([datetime]$rApp.admin_applastlaunchedon) -lt ([datetime]$e.admin_creationtime))
+        # Update admin_applastlaunchedon is less than current auditlog entry or NULL
+        if (($null -eq $rApp.admin_applastlaunchedon) -or ([datetime]$rApp.admin_applastlaunchedon) -lt ([datetime]$e.admin_creationtime))
         {
             # Update App admin_applastlaunchedon info
             Set-CrmRecord -conn $conn -EntityLogicalName admin_app -Id $rApp.admin_appid -Fields @{ "admin_applastlaunchedon" = [datetime]$e.admin_creationtime }
@@ -61,7 +63,7 @@ foreach ($e in $sourceRecords.CrmRecords)
         $lookupObject = $null
 
         # create lookup object for auditlog item
-        if ($rApp.original -ne $null)
+        if ($null -ne $rApp.original)
         {
             $lookupObject = New-Object -TypeName Microsoft.Xrm.Sdk.EntityReference;
             $lookupObject.LogicalName = "admin_app";
@@ -69,7 +71,7 @@ foreach ($e in $sourceRecords.CrmRecords)
         }
 
         # Insert only if app exists
-        if ($lookupObject -ne $null)
+        if ($null -ne $lookupObject)
         {
             Update-CrmRecord -conn $conn -EntityLogicalName admin_auditlog -Id $e.admin_auditlogid -Upsert -Fields @{
                 "admin_title"= $e.admin_title;
