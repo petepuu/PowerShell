@@ -37,7 +37,7 @@ $connSource = Connect-CrmOnline -ServerUrl $SourceEnvironmentUrl -ForceOAuth
 $connDest = Connect-CrmOnline -ServerUrl $DestinationEnvironmentUrl -ForceOAuth
 
 # Get all events from the AuditLog table of the source environment
-$sourceRecords = Get-CrmRecords -conn $connSource -EntityLogicalName admin_auditlog -Fields admin_title,admin_applookup,admin_operation,admin_appid,admin_workload,admin_userupn,admin_creationtime,admin_auditlogid -ErrorAction SilentlyContinue   
+$sourceRecords = Get-CrmRecords -conn $connSource -AllRows -EntityLogicalName admin_auditlog -Fields admin_title,admin_applookup,admin_operation,admin_appid,admin_workload,admin_userupn,admin_creationtime,admin_auditlogid -ErrorAction SilentlyContinue   
 
 write-host
 Write-Host "MIGRATING COE AUDIT LOG EVENTS"
