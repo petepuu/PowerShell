@@ -1,4 +1,8 @@
-﻿param
+﻿
+#### REQUIRES MSAL.PS MODULE
+#### https://www.powershellgallery.com/packages/MSAL.PS
+
+param
 (
     [Parameter(Mandatory=$false)]
     [string]$TenantName = ".onmicrosoft.com",
