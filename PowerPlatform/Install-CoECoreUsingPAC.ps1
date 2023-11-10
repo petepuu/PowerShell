@@ -68,7 +68,7 @@ $global:Connections = $null
 
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
-$Credentials = Get-Credential -Message "Provide GA or Power Platform Admin Credentials"
+$Credentials = Get-Credential -Message "Provide CoE Service Account credentials having Power Platform Administrator role"
 
 # PAC AUTH
 pac auth create -u $EnvironmentUrl -un $Credentials.UserName -p $Credentials.GetNetworkCredential().Password
