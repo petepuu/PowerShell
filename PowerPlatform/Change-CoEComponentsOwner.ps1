@@ -1,5 +1,9 @@
 ﻿
-# Required MSAL.PS and Power Platform Admin PowerShell modules 
+# Requires MSAL.PS and Power Platform Admin PowerShell modules 
+# https://www.powershellgallery.com/packages/Microsoft.PowerApps.Administration.PowerShell
+# https://www.powershellgallery.com/packages/MSAL.PS
+
+# Run script using current CoE service account
 
 param
 (
