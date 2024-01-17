@@ -3,6 +3,9 @@
 # https://www.powershellgallery.com/packages/Microsoft.PowerApps.Administration.PowerShell
 # https://www.powershellgallery.com/packages/MSAL.PS
 
+# NOTE! Client ID used in the API call is the sample Client ID not meant for production use
+# See more: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/xrm-tooling/use-connection-strings-xrm-tooling-connect#connection-string-parameters
+
 # Run script using current CoE service account
 
 param
@@ -31,7 +34,7 @@ $EnvironmentUrl = $environment.Internal.properties.linkedEnvironmentMetadata.ins
 
 $connectionDetails = @{
     'TenantId'     = $TenantName
-    'ClientId'     = '51f81489-12ee-4a9e-aaae-a2591f45987d'
+    'ClientId'     = '51f81489-12ee-4a9e-aaae-a2591f45987d' # This Client ID is meant only for development and testing purposes. See more: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/xrm-tooling/use-connection-strings-xrm-tooling-connect#connection-string-parameters
     'Interactive'  = $true
     'RedirectUri'  = 'https://localhost'
     'Scopes'    = $EnvironmentUrl + '.default'
