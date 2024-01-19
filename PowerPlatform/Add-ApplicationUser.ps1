@@ -6,6 +6,7 @@
 # See more: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/xrm-tooling/use-connection-strings-xrm-tooling-connect#connection-string-parameters
 
 # API endpoint used is still in Preview https://learn.microsoft.com/en-us/power-platform/admin/create-dataverseapplicationuser
+
 param
 (
     [Parameter(Mandatory=$true)]
