@@ -1,4 +1,5 @@
-﻿# Requires Microsoft.Xrm.Data.PowerShell module which will be installed if not found
+﻿
+# Requires Microsoft.Xrm.Data.PowerShell module which will be installed if not found
 
 param
 (   
@@ -6,7 +7,14 @@ param
     [string]$SourceEnvironmentURL,
 
     [Parameter(Mandatory=$true)]
-    [string]$DestinationEnvironmentURL
+    [string]$DestinationEnvironmentURL,
+
+    # !!!NOTE!!! If you want to migrate ALL events in one run then do NOT set these parameters
+    [Parameter(Mandatory=$false)]
+    [string]$StartDate, # yyyy-MM-dd
+
+    [Parameter(Mandatory=$false)]
+    [string]$EndDate # yyyy-MM-dd
 )
 
 # Install Microsoft.Xrm.Data.PowerShell module if not installed already 
@@ -36,8 +44,36 @@ $connSource = Connect-CrmOnline -ServerUrl $SourceEnvironmentUrl -ForceOAuth
 
 $connDest = Connect-CrmOnline -ServerUrl $DestinationEnvironmentUrl -ForceOAuth
 
-# Get all events from the AuditLog table of the source environment
-$sourceRecords = Get-CrmRecords -conn $connSource -AllRows -EntityLogicalName admin_auditlog -Fields admin_title,admin_applookup,admin_operation,admin_appid,admin_workload,admin_userupn,admin_creationtime,admin_auditlogid -ErrorAction SilentlyContinue   
+# Get events from the AuditLog table of the source environment
+
+if ([string]::IsNullOrEmpty($StartDate) -or [string]::IsNullOrEmpty($EndDate))
+{
+    $sourceRecords = Get-CrmRecords -conn $connSource -AllRows -EntityLogicalName admin_auditlog -Fields admin_title,admin_applookup,admin_operation,admin_appid,admin_workload,admin_userupn,admin_creationtime,admin_auditlogid -ErrorAction SilentlyContinue   
+}
+else 
+{
+    $fetchxml = @"
+    <fetch version="1.0" distinct="false">
+      <entity name="admin_auditlog">
+        <attribute name="admin_title" />
+        <attribute name="admin_applookup" />
+        <attribute name="admin_operation" />
+        <attribute name="admin_appid" />
+        <attribute name="admin_workload" />
+        <attribute name="admin_userupn" />
+        <attribute name="admin_creationtime" />
+        <attribute name="admin_auditlogid" />
+        <filter type="and">
+            <condition attribute="admin_creationtime" operator="ge" value="$($StartDate)" />
+            <condition attribute="admin_creationtime" operator="le" value="$($EndDate)" />
+        </filter>
+      </entity>
+    </fetch>
+"@
+    $sourceRecords = Get-CrmRecordsByFetch -conn $connSource -Fetch $fetchxml -ErrorAction SilentlyContinue   
+}
+
+
 
 write-host
 Write-Host "MIGRATING COE AUDIT LOG EVENTS"
@@ -88,5 +124,6 @@ foreach ($e in $sourceRecords.CrmRecords)
     }  
 }
 
+write-host
 write-host "Migrated total $cntMigrated events to $DestinationEnvironmentURL (only apps which exists in CoE PowerApps App table)"
 write-host
