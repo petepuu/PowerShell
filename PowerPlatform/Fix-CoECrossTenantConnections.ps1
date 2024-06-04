@@ -23,9 +23,17 @@ if ($envVar.CrmRecords.Count -eq 1)
 {
     $envVarValue = Get-CrmRecords -TopCount 1 -EntityLogicalName environmentvariablevalue -Fields * -FilterAttribute environmentvariabledefinitionid -FilterOperator eq -FilterValue $envVar.CrmRecords[0].environmentvariabledefinitionid
 
-    $value = $envVarValue.CrmRecords[0].value
+    if ($envVarValue.CrmRecords.Count -gt 0)
+    {
+        $value = $envVarValue.CrmRecords[0].value
 
-    $hostDomains = $value.split(",")
+        $hostDomains = $value.split(",")
+    }
+    else 
+    {
+        Write-Host "Host Domains environment variable not set!" -ForegroundColor Red
+        break
+    }
 }
 
 if ($hostDomains.Count -gt 0)
