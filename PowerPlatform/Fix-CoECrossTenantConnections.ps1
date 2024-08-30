@@ -6,9 +6,9 @@
 
 param
 (    
-    # Get environment URL https://org??????.crm.dynamics.com from PPAC for example 
-    [Parameter(Mandatory=$true)]
-    [string]$EnvironmentURL
+    # Get environment URL https://org??????.crm.dynamics.com of your CoE Starter Kit environment from PPAC for example 
+    [Parameter(Mandatory=$false)]
+    [string]$EnvironmentURL = "https://org43cef529.crm4.dynamics.com/"
 )
 
 Import-Module Microsoft.Xrm.Data.Powershell
@@ -27,7 +27,7 @@ if ($envVar.CrmRecords.Count -eq 1)
     {
         $value = $envVarValue.CrmRecords[0].value
 
-        $hostDomains = $value.split(",")
+        $hostDomains = $value.Replace(" ", "").split(",")
     }
     else 
     {
