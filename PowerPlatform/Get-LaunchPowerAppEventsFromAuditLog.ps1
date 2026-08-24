@@ -171,7 +171,7 @@ do
 {
     $entries = $null
 
-    $entries = Search-UnifiedAuditLog -StartDate $StartDate.ToLocalTime() -EndDate $StartDate.AddDays(1).ToLocalTime() -SessionCommand ReturnLargeSet -ResultSize 5000 -RecordType PowerAppsApp -Operations LaunchPowerApp
+    $entries = Search-UnifiedAuditLog -StartDate $StartDate.ToLocalTime() -EndDate $StartDate.AddDays(1).ToLocalTime() -SessionCommand ReturnLargeSet -ResultSize 5000 -RecordType PowerPlatformAdministratorActivity -Operations LaunchPowerApp
 
     $cnt = @($entries).Count
     
