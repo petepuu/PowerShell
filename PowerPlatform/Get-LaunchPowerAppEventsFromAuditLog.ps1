@@ -109,12 +109,12 @@ function UpdateCoE($entries)
 $currentDate = Get-Date
 
 # Install ExchangeOnlineManagement module if not installed already 
-$m = Get-InstalledModule -Name ExchangeOnlineManagement -MinimumVersion 3.0.0 -ErrorAction Ignore
+$m = Get-InstalledModule -Name ExchangeOnlineManagement -MinimumVersion 3.10.0 -ErrorAction Ignore
 
 if ($m -eq $null)
 {
     $title    = 'Install ExchangeOnlineManagement PowerShell Module'
-    $question = 'Unable to find ExchangeOnlineManagement PowerShell module version 3.0.0 which is needed for this script to run. Do you want to install this module?'
+    $question = 'Unable to find ExchangeOnlineManagement PowerShell module version V3 which is needed for this script to run. Do you want to install this module?'
     $choices  = '&Yes', '&No'
 
     $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
@@ -186,7 +186,7 @@ do
         {
             $cnt = 0
 
-            $entries = Search-UnifiedAuditLog -StartDate $tmpStartDate.ToLocalTime() -EndDate $tmpStartDate.AddHours(3).ToLocalTime() -SessionCommand ReturnLargeSet -ResultSize 5000 -RecordType PowerAppsApp -Operations LaunchPowerApp
+            $entries = Search-UnifiedAuditLog -StartDate $tmpStartDate.ToLocalTime() -EndDate $tmpStartDate.AddHours(3).ToLocalTime() -SessionCommand ReturnLargeSet -ResultSize 5000 -RecordType PowerPlatformAdministratorActivity -Operations LaunchPowerApp
 
             $cnt = @($entries).Count
 
